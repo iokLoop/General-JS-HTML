@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Random Number Generator with Bias and Normal Distribution</title>
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    #container {
+      display: flex;
+      height: 100%;
+    }
+    
+    #controls {
+      width: 20%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+      background-color: rgb(0, 0, 0);
+      color: #ffffff;
+    }
+    
+    #right-section {
+      width: 80%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #resume {
+      /*flex-grow: 1;*/
+      background-color: rgb(0, 0, 0);
+      color: #ffffff;
+      height: 20%;
+    }
+    
+    #numbers {
+      flex-grow: 1;
+      background-color: rgb(0, 0, 0);
+      color: #ffffff;
+      justify-content: top;
+      align-items: top;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="container">
+    <div id="controls">
+      <h3>Control Panel</h3>
+      <label for="numDots">
+        Number of Dots:
+        <input type="number" id="numDots" min="1" step="1" value="300" style="width: 60px;">
+      </label>
+      <label for="biasNumber">
+        Bias Number:
+        <input type="number" id="biasNumber" min="0" max="1" step="0.01" value="0.5" style="width: 50px;">
+      </label>
+
+      <label for="generalProbability">
+        General Probability:
+        <input type="number" id="generalProbability" min="0" max="1" step="0.01" value="0.75" style="width: 50px;">
+      </label>
+
+      <button onclick="updateSettings()">Update</button>
+    </div>
+      
+    <div id="right-section">
+      <div id="resume">Random Number Generator with Bias and Normal Distribution
+        <pre id="resume-content"></pre>
+      </div>
+      <div id="numbers">Numbers Content
+        <pre id="numbers-content"></pre>
+        <script>
+          // Function to generate a random number following an adjusted normal distribution
+          function generateRandomWithProbability(mean, stdDev) {
+            const value = mean + (randomGaussian() * stdDev);
+            return Math.max(0, Math.min(1, value));
+          }
+      
+          // Generates a random number with standard normal distribution using the Box-Muller transform method
+          function randomGaussian() {
+            let u = 0, v = 0;
+            while (u === 0) u = Math.random(); // Excluye el 0
+            while (v === 0) v = Math.random(); // Excluye el 0
+            return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+          }
+          
+          function getNumbers(numDots,bias){
+            let firstHalfNumDots = Math.round(numDots * generalProbability);
+            let secondHalfNumDots = numDots - firstHalfNumDots;
+            const randomNumbers = [];
+        
+            for (let i = 0; i < firstHalfNumDots; i++) {
+              randomNumbers.push(generateRandomWithProbability(0.7, 0.1));
+            }
+        
+            for (let i = 0; i < secondHalfNumDots; i++) {
+              randomNumbers.push(generateRandomWithProbability(0.3, 0.1));
+            }
+        
+            const countAboveThreshold = randomNumbers.filter(number => number > bias).length;
+            const aboveThresholdPercentage = countAboveThreshold / numDots;
+        
+            const resumeContent = document.getElementById('resume-content');
+            const numbersContent = document.getElementById('numbers-content');
+            resumeContent.textContent = "Resume Content" + "\n\n";
+            resumeContent.textContent += "Number of generated numbers above 0.5: " + countAboveThreshold + "\n";
+            resumeContent.textContent += "Percentage of generated numbers above " + bias + ": " + Math.round(aboveThresholdPercentage*100) + "% \n \n";
+        
+            if (aboveThresholdPercentage >= generalProbability) {
+              resumeContent.textContent += "The desired percentage is met.";
+            } else {
+              resumeContent.textContent += "The desired percentage is not met.";
+            }
+
+            numbersContent.textContent = randomNumbers.join('\n');
+          }
+
+          // Update the settings based on the input values
+          function updateSettings() {
+            numDots = parseInt(document.getElementById('numDots').value);
+            bias = parseFloat(document.getElementById('biasNumber').value);
+            generalProbability = parseFloat(document.getElementById('generalProbability').value);
+            getNumbers(numDots,bias)
+          }
+          updateSettings()
+        </script>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
